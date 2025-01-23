@@ -100,4 +100,36 @@ public class ProdutoControllerTest {
         .andExpect(jsonPath("$[0].id").value(produto.getId()))
         .andExpect(jsonPath("$[0].nome").value(produto.getNome()));
   }
+
+  @Test
+  public void testBuscarSemNome() throws Exception {
+    when(produtoRepository.findAll()).thenReturn(Arrays.asList(produto));
+
+    mockMvc.perform(get("/produtos"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].id").value(produto.getId()))
+      .andExpect(jsonPath("$[0].nome").value(produto.getNome()));
+  }
+
+  @Test
+  public void testBuscarComNome() throws Exception {
+    when(produtoRepository.findByNome(anyString())).thenReturn(Arrays.asList(produto));
+
+    mockMvc.perform(get("/produtos").param("nome", "Produto Teste"))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$[0].id").value(produto.getId()))
+      .andExpect(jsonPath("$[0].nome").value(produto.getNome()));
+  }
+
+  @Test
+  public void testBuscarSemResultados() throws Exception {
+    when(produtoRepository.findAll()).thenReturn(Arrays.asList());
+    when(produtoRepository.findByNome(anyString())).thenReturn(Arrays.asList());
+
+    mockMvc.perform(get("/produtos"))
+      .andExpect(status().isNotFound());
+
+    mockMvc.perform(get("/produtos").param("nome", "Produto Inexistente"))
+      .andExpect(status().isNotFound());
+  }
 }
