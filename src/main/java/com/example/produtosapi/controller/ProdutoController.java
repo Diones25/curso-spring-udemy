@@ -39,8 +39,7 @@ public class ProdutoController {
 
   @GetMapping("/{id}")
   public Produto obterProdutoPorId(@PathVariable("id") String id) {
-    Optional<Produto> produto = produtoRepository.findById(id);
-    return produto.isPresent() ? produto.get() : null;
+    return produtoRepository.findById(id).orElse(null);
   }
 
   @DeleteMapping("/{id}")
