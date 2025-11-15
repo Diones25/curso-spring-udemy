@@ -1,5 +1,6 @@
 package com.example.produtosapi.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.produtosapi.dto.ProdutoRequestDTO;
 import com.example.produtosapi.model.Produto;
 import com.example.produtosapi.repository.ProdutoRepository;
 
@@ -31,12 +33,17 @@ public class ProdutoController {
   }
 
   @PostMapping
-  public ResponseEntity<Produto> salvar(@RequestBody Produto produto) {
+  public ResponseEntity<Produto> salvar(@Valid @RequestBody ProdutoRequestDTO produtoDTO) {
+    Produto produto = new Produto();
+    produto.setNome(produtoDTO.getNome());
+    produto.setDescricao(produtoDTO.getDescricao());
+    produto.setPreco(produtoDTO.getPreco());
+
     var id = UUID.randomUUID().toString();
     produto.setId(id);
 
-    produtoRepository.save(produto);
-    return ResponseEntity.status(201).body(produto);
+    Produto produtoSalvo = produtoRepository.save(produto);
+    return ResponseEntity.status(201).body(produtoSalvo);
   }
 
   @GetMapping("/{id}")
@@ -57,11 +64,16 @@ public class ProdutoController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Void> atualizar(@PathVariable("id") String id, @RequestBody Produto produto) {
+  public ResponseEntity<Void> atualizar(@PathVariable("id") String id,
+      @Valid @RequestBody ProdutoRequestDTO produtoDTO) {
     // Verificando se o id do produto existe
-    produtoRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    produto.setId(id);
-    produtoRepository.save(produto);
+    Produto produtoExistente = produtoRepository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+    produtoExistente.setNome(produtoDTO.getNome());
+    produtoExistente.setDescricao(produtoDTO.getDescricao());
+    produtoExistente.setPreco(produtoDTO.getPreco());
+    produtoRepository.save(produtoExistente);
     return ResponseEntity.noContent().build();
   }
 
